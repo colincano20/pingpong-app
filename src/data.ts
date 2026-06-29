@@ -202,3 +202,50 @@ export async function recordMatch(input: {
     eloChange,
   };
 }
+export type GameRow = { gameNumber: number; aPoints: number; bPoints: number };
+
+export type MatchDetailData = {
+  matchId: string;
+  playedAt: string;
+  playerA: string;
+  playerB: string;
+  aSide: string | null;
+  aGames: number;
+  bGames: number;
+  winner: string;
+  games: GameRow[];
+};
+
+// Everything needed for one match's box score: the meta plus every game's score.
+export async function getMatchDetail(matchId: string): Promise<MatchDetailData> {
+  const [{ data: meta, error: metaErr }, { data: gameRows, error: gamesErr }] =
+    await Promise.all([
+      supabase
+        .from("match_results")
+        .select("match_id, played_at, player_a, player_b, a_side, a_games, b_games, winner")
+        .eq("match_id", matchId)
+        .single(),
+      supabase
+        .from("games")
+        .select("game_number, a_points, b_points")
+        .eq("match_id", matchId)
+        .order("game_number", { ascending: true }),
+    ]);
+  if (metaErr) throw metaErr;
+  if (gamesErr) throw gamesErr;
+  return {
+    matchId: meta.match_id as string,
+    playedAt: meta.played_at as string,
+    playerA: meta.player_a as string,
+    playerB: meta.player_b as string,
+    aSide: (meta.a_side as string | null) ?? null,
+    aGames: Number(meta.a_games),
+    bGames: Number(meta.b_games),
+    winner: meta.winner as string,
+    games: (gameRows ?? []).map((g) => ({
+      gameNumber: Number(g.game_number),
+      aPoints: Number(g.a_points),
+      bPoints: Number(g.b_points),
+    })),
+  };
+}

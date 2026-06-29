@@ -3,6 +3,7 @@
 // the final game score (winner in green), and the date. In the next step each
 // card becomes tappable to open its box score.
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import type { Player, MatchRow } from "./data";
 import { getMatchHistory } from "./data";
 
@@ -64,7 +65,7 @@ export default function Scoreboard({ players }: { players: Player[] }) {
         {recent.map((m) => {
           const aWon = m.winner === m.playerA;
           return (
-            <article key={m.matchId} className="pp-match-card">
+            <Link to={`/match/${m.matchId}`} key={m.matchId} className="pp-match-card">
               <div className="pp-match-top">
                 <span className={aWon ? "pp-score-name pp-score-win" : "pp-score-name"}>
                   {nameOf(m.playerA)}
@@ -88,7 +89,7 @@ export default function Scoreboard({ players }: { players: Player[] }) {
                 <span className="pp-match-date">{shortDate(m.playedAt)}</span>
                 <span className="pp-match-chevron" aria-hidden="true">›</span>
               </div>
-            </article>
+            </Link>
           );
         })}
       </div>

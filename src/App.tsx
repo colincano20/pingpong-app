@@ -1,41 +1,42 @@
 // App.tsx
-// App shell: shared player list, tab switching, and the light/dark theme toggle.
-// Scoreboard is the landing tab. Theme lives on <html data-theme> and is
-// remembered in localStorage; dark is the default.
+// App shell with routing. Each tab is a real route, so the back button and
+// shareable URLs work. Holds the shared player list and the theme toggle.
 import { useCallback, useEffect, useState } from "react";
+import { NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { getPlayers, type Player } from "./data";
 import Scoreboard from "./Scoreboard";
 import Standings from "./Standings";
 import LogMatch from "./LogMatch";
 import Odds from "./Odds";
 import Stats from "./Stats";
+import MatchDetail from "./MatchDetail";
 
-type Tab = "scoreboard" | "standings" | "log" | "odds" | "stats";
 type Theme = "dark" | "light";
 
-const TITLES: Record<Tab, string> = {
-  scoreboard: "Scoreboard",
-  standings: "Standings",
-  log: "New match",
-  odds: "Match odds",
-  stats: "Stats",
-};
-
-const TABS: { id: Tab; label: string }[] = [
-  { id: "scoreboard", label: "Scores" },
-  { id: "standings", label: "Ranks" },
-  { id: "log", label: "Log" },
-  { id: "odds", label: "Odds" },
-  { id: "stats", label: "Stats" },
+const TABS = [
+  { to: "/", label: "Scores", end: true },
+  { to: "/standings", label: "Ranks", end: false },
+  { to: "/log", label: "Log", end: false },
+  { to: "/odds", label: "Odds", end: false },
+  { to: "/stats", label: "Stats", end: false },
 ];
+
+function titleFor(pathname: string): string {
+  if (pathname.startsWith("/standings")) return "Standings";
+  if (pathname.startsWith("/log")) return "New match";
+  if (pathname.startsWith("/odds")) return "Match odds";
+  if (pathname.startsWith("/stats")) return "Stats";
+  if (pathname.startsWith("/match")) return "Box score";
+  return "Scoreboard";
+}
 
 export default function App() {
   const [players, setPlayers] = useState<Player[]>([]);
-  const [tab, setTab] = useState<Tab>("scoreboard");
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem("pp-theme");
     return saved === "light" || saved === "dark" ? saved : "dark";
   });
+  const location = useLocation();
 
   const load = useCallback(() => {
     getPlayers()
@@ -57,7 +58,7 @@ export default function App() {
       <header className="pp-header">
         <div>
           <span className="pp-eyebrow">Garage League</span>
-          <h1 className="pp-title">{TITLES[tab]}</h1>
+          <h1 className="pp-title">{titleFor(location.pathname)}</h1>
         </div>
         <button
           className="pp-theme-toggle"
@@ -70,23 +71,27 @@ export default function App() {
 
       <nav className="pp-tabs">
         {TABS.map((t) => (
-          <button
-            key={t.id}
-            className={tab === t.id ? "pp-tab pp-tab-on" : "pp-tab"}
-            onClick={() => setTab(t.id)}
+          <NavLink
+            key={t.to}
+            to={t.to}
+            end={t.end}
+            className={({ isActive }) => (isActive ? "pp-tab pp-tab-on" : "pp-tab")}
           >
             {t.label}
-          </button>
+          </NavLink>
         ))}
       </nav>
 
-      {tab === "scoreboard" && <Scoreboard players={players} />}
-      {tab === "standings" && <Standings />}
-      {tab === "log" && <LogMatch players={players} onSaved={load} />}
-      {tab === "odds" && <Odds players={players} />}
-      {tab === "stats" && <Stats players={players} />}
+      <Routes>
+        <Route path="/" element={<Scoreboard players={players} />} />
+        <Route path="/standings" element={<Standings />} />
+        <Route path="/log" element={<LogMatch players={players} onSaved={load} />} />
+        <Route path="/odds" element={<Odds players={players} />} />
+        <Route path="/stats" element={<Stats players={players} />} />
+        <Route path="/match/:id" element={<MatchDetail players={players} />} />
+      </Routes>
 
-      <footer className="pp-footer">Best of 5, first to 3</footer>
+      <footer className="pp-footer">© {new Date().getFullYear()} Colin Cano</footer>
     </div>
   );
 }
