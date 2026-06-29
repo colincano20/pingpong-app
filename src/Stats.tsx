@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Player, MatchRow } from "./data";
 import { getMatchHistory } from "./data";
-import { hottestStreak, coldestStreak, rivalries, biggestBlowout } from "./stats";
+import { hottestStreak, coldestStreak, rivalries, biggestBlowout } from "./statsmath";
 
 export default function Stats({ players }: { players: Player[] }) {
   const [matches, setMatches] = useState<MatchRow[]>([]);
