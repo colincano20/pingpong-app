@@ -1,16 +1,44 @@
-/* index.css — the whole app's styling. Replace the Vite template's index.css
-   with this. Mobile-first, light theme, table-green accent. */
+/* index.css — the whole app's styling, themed.
+   Colors are driven by CSS variables that change with the data-theme attribute
+   on <html>, so every component adapts automatically. Dark is the default.
+   Palette: table-surface background, white "lines" for text, table green for
+   the accent, and a touch of table-tennis-ball orange for live elements. */
 
-:root {
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e1512;
+  --card: #16201b;
+  --inset: #1b271f;
+  --line: #27332c;
+  --row-line: #232f28;
+  --ink: #eaf0ec;
+  --muted: #8b9a91;
+  --faint: #5f6e66;
+  --green: #2bc283;
+  --green-soft: #16291f;
+  --on-green: #07120d;
+  --danger: #f0635f;
+  --ball: #ff9450;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] {
   color-scheme: light;
-  --green: #0f6e56;
-  --green-soft: #eef5f2;
-  --ink: #14201b;
-  --muted: #6b7a73;
-  --line: #e6e8e6;
-  --bg: #f6f8f7;
+  --bg: #f3f6f4;
   --card: #ffffff;
-  --danger: #a32d2d;
+  --inset: #f7faf8;
+  --line: #e4e9e6;
+  --row-line: #eef2ef;
+  --ink: #15211c;
+  --muted: #647067;
+  --faint: #9aa6a0;
+  --green: #0f7d5f;
+  --green-soft: #e8f3ee;
+  --on-green: #ffffff;
+  --danger: #b5332f;
+  --ball: #db6a23;
+  --shadow: 0 1px 2px rgba(20, 32, 27, 0.06);
 }
 
 * { box-sizing: border-box; }
@@ -31,6 +59,11 @@ body {
 }
 
 /* Header */
+.pp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 .pp-eyebrow {
   display: inline-block;
   font-size: 0.72rem;
@@ -44,6 +77,20 @@ body {
   font-size: 2.1rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+.pp-theme-toggle {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  font-size: 1.05rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  margin-top: 0.4rem;
+  flex: 0 0 auto;
 }
 
 /* Tabs */
@@ -69,7 +116,7 @@ body {
 .pp-tab-on {
   background: var(--card);
   color: var(--green);
-  box-shadow: 0 1px 2px rgba(20, 32, 27, 0.08);
+  box-shadow: var(--shadow);
 }
 
 /* Card */
@@ -78,7 +125,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 0.5rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 27, 0.04);
+  box-shadow: var(--shadow);
 }
 
 /* Standings list */
@@ -88,7 +135,7 @@ body {
   align-items: center;
   gap: 0.9rem;
   padding: 0.85rem 0.9rem;
-  border-bottom: 1px solid #f0f2f0;
+  border-bottom: 1px solid var(--row-line);
 }
 .pp-row:last-child { border-bottom: none; }
 .pp-rank {
@@ -102,7 +149,7 @@ body {
   font-weight: 700;
   font-size: 0.9rem;
 }
-.pp-row:first-child .pp-rank { background: var(--green); color: #fff; }
+.pp-row:first-child .pp-rank { background: var(--green); color: var(--on-green); }
 .pp-name { flex: 1; font-weight: 600; font-size: 1.05rem; }
 .pp-elo { font-variant-numeric: tabular-nums; font-weight: 700; }
 
@@ -130,7 +177,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 10px;
   font-size: 1rem;
-  background: #fff;
+  background: var(--card);
   color: var(--ink);
 }
 .pp-vs {
@@ -158,7 +205,7 @@ body {
   color: var(--muted);
   cursor: pointer;
 }
-.pp-toggle-on { background: #fff; color: var(--green); }
+.pp-toggle-on { background: var(--card); color: var(--green); }
 
 /* Odds strip */
 .pp-odds {
@@ -177,7 +224,7 @@ body {
 .pp-pct { font-variant-numeric: tabular-nums; color: var(--green); }
 .pp-ml { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 3.2rem; text-align: right; }
 .pp-spread { margin: 0.5rem 0 0; font-size: 0.85rem; color: var(--muted); }
-.pp-live-tag { color: var(--green); font-weight: 600; }
+.pp-live-tag { color: var(--ball); font-weight: 700; }
 
 /* Tally + games */
 .pp-tally {
@@ -195,7 +242,7 @@ body {
   gap: 0.6rem;
   align-items: center;
   padding: 0.5rem 0.7rem;
-  background: #fafbfa;
+  background: var(--inset);
   border-radius: 8px;
   font-variant-numeric: tabular-nums;
 }
@@ -211,12 +258,14 @@ body {
   border-radius: 10px;
   font-size: 1rem;
   text-align: center;
+  background: var(--card);
+  color: var(--ink);
 }
 
 /* Buttons */
 .pp-btn {
   border: 1px solid var(--green);
-  background: #fff;
+  background: var(--card);
   color: var(--green);
   padding: 0.7rem 1rem;
   border-radius: 10px;
@@ -224,7 +273,7 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
-.pp-btn-primary { background: var(--green); color: #fff; width: 100%; padding: 0.85rem; }
+.pp-btn-primary { background: var(--green); color: var(--on-green); width: 100%; padding: 0.85rem; border-color: var(--green); }
 .pp-btn-primary:disabled { opacity: 0.6; cursor: default; }
 .pp-link {
   border: none;
@@ -242,7 +291,7 @@ body {
 .pp-error { padding: 0.6rem 0.4rem; }
 .pp-error-title { font-weight: 700; color: var(--danger); margin: 0 0 0.3rem; }
 .pp-error code, .pp-muted code {
-  background: #f3f4f3; padding: 0.05rem 0.3rem; border-radius: 4px; font-size: 0.85em;
+  background: var(--inset); padding: 0.05rem 0.3rem; border-radius: 4px; font-size: 0.85em;
 }
 
 /* Saved result */
@@ -255,7 +304,7 @@ body {
   gap: 0.6rem;
   align-items: baseline;
   padding: 0.6rem 0.8rem;
-  background: #fafbfa;
+  background: var(--inset);
   border-radius: 10px;
   text-align: left;
   font-variant-numeric: tabular-nums;
@@ -269,7 +318,7 @@ body {
   text-align: center;
   margin-top: 1.5rem;
   font-size: 0.8rem;
-  color: #9aa6a0;
+  color: var(--faint);
   letter-spacing: 0.04em;
 }
 
@@ -285,7 +334,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 1rem;
-  box-shadow: 0 1px 2px rgba(20, 32, 27, 0.04);
+  box-shadow: var(--shadow);
 }
 .pp-stat-wide { grid-column: 1 / -1; }
 .pp-stat-label {
