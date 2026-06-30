@@ -579,3 +579,50 @@ a.pp-match-card:active { transform: scale(0.99); }
   text-decoration: underline;
   padding: 0.1rem 0.2rem;
 }
+/* Sortable stats table */
+.pp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  -webkit-overflow-scrolling: touch;
+}
+.pp-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.pp-table th,
+.pp-table td {
+  padding: 0.6rem 0.7rem;
+  text-align: right;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--row-line);
+}
+.pp-table tbody tr:last-child td { border-bottom: none; }
+.pp-table th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  user-select: none;
+}
+.pp-table th.pp-th-active { color: var(--green); }
+/* Sticky player column */
+.pp-table th:first-child,
+.pp-table td:first-child {
+  position: sticky;
+  left: 0;
+  text-align: left;
+  background: var(--card);
+  border-right: 1px solid var(--line);
+  z-index: 1;
+}
+.pp-table th:first-child { z-index: 2; }
+.pp-table td .pp-name-link { font-weight: 600; }
