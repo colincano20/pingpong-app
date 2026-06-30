@@ -4,6 +4,7 @@
 // the updated table.
 import { useEffect, useState } from "react";
 import { getStandings, type StandingsRow } from "./data";
+import { Link } from "react-router-dom";
 
 export default function Standings() {
   const [rows, setRows] = useState<StandingsRow[]>([]);
@@ -52,7 +53,7 @@ export default function Standings() {
               <li key={r.id} className="pp-row">
                 <span className="pp-rank">{i + 1}</span>
                 <div className="pp-name-block">
-                  <span className="pp-name">{r.name}</span>
+                  <Link className="pp-name pp-name-link" to={`/player/${r.id}`}>{r.name}</Link>
                   <span className="pp-record">
                     {r.wins}-{r.losses}
                     {pct !== null ? ` · ${pct}%` : ""}

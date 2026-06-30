@@ -10,6 +10,7 @@ import LogMatch from "./LogMatch";
 import Odds from "./Odds";
 import Stats from "./Stats";
 import MatchDetail from "./MatchDetail";
+import Profile from "./Profile";
 
 type Theme = "dark" | "light";
 
@@ -27,6 +28,7 @@ function titleFor(pathname: string): string {
   if (pathname.startsWith("/odds")) return "Match odds";
   if (pathname.startsWith("/stats")) return "Stats";
   if (pathname.startsWith("/match")) return "Box score";
+  if (pathname.startsWith("/player")) return "Profile";
   return "Scoreboard";
 }
 
@@ -89,6 +91,7 @@ export default function App() {
         <Route path="/odds" element={<Odds players={players} />} />
         <Route path="/stats" element={<Stats players={players} />} />
         <Route path="/match/:id" element={<MatchDetail players={players} />} />
+        <Route path="/player/:id" element={<Profile players={players} />} />
       </Routes>
 
       <footer className="pp-footer">© {new Date().getFullYear()} Colin Cano</footer>

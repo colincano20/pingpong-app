@@ -117,3 +117,51 @@ export function biggestBlowout(
     margin: Math.abs(best.aPointMargin),
   };
 }
+export type PlayerRecord = { wins: number; losses: number; played: number };
+
+// A single player's overall win-loss record.
+export function playerRecord(matches: MatchRow[], playerId: string): PlayerRecord {
+  let wins = 0;
+  let losses = 0;
+  for (const m of matches) {
+    if (m.playerA !== playerId && m.playerB !== playerId) continue;
+    if (m.winner === playerId) wins++;
+    else losses++;
+  }
+  return { wins, losses, played: wins + losses };
+}
+
+export type H2H = {
+  opponentId: string;
+  opponentName: string;
+  wins: number;
+  losses: number;
+};
+
+// One player's head-to-head record against each opponent, most-played first.
+export function headToHead(
+  matches: MatchRow[],
+  players: Player[],
+  playerId: string,
+): H2H[] {
+  const map = new Map<string, { wins: number; losses: number }>();
+  for (const m of matches) {
+    if (m.playerA !== playerId && m.playerB !== playerId) continue;
+    const opp = m.playerA === playerId ? m.playerB : m.playerA;
+    let r = map.get(opp);
+    if (!r) {
+      r = { wins: 0, losses: 0 };
+      map.set(opp, r);
+    }
+    if (m.winner === playerId) r.wins++;
+    else r.losses++;
+  }
+  return [...map.entries()]
+    .map(([opp, r]) => ({
+      opponentId: opp,
+      opponentName: nameOf(players, opp),
+      wins: r.wins,
+      losses: r.losses,
+    }))
+    .sort((x, y) => y.wins + y.losses - (x.wins + x.losses));
+}

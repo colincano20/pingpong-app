@@ -2,7 +2,7 @@
 // Box score for a single match, opened from a scoreboard card. Reads the match
 // id from the URL (/match/:id), so it deep-links and the back button works.
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Player, MatchDetailData } from "./data";
 import { getMatchDetail } from "./data";
 
@@ -57,21 +57,25 @@ export default function MatchDetail({ players }: { players: Player[] }) {
     body = (
       <>
         <div className="pp-detail-banner">
-          <span className={aWon ? "pp-detail-name pp-score-win" : "pp-detail-name"}>
+          <Link
+            to={`/player/${data.playerA}`}
+            className={aWon ? "pp-detail-name pp-name-link pp-score-win" : "pp-detail-name pp-name-link"}
+          >
             {aName}
-          </span>
+          </Link>
           <span className="pp-detail-score">
             <b className={aWon ? "pp-score-win" : "pp-score-dim"}>{data.aGames}</b>
             <span className="pp-score-dash">–</span>
             <b className={!aWon ? "pp-score-win" : "pp-score-dim"}>{data.bGames}</b>
           </span>
-          <span
+          <Link
+            to={`/player/${data.playerB}`}
             className={
-              !aWon ? "pp-detail-name pp-right pp-score-win" : "pp-detail-name pp-right"
+              !aWon ? "pp-detail-name pp-right pp-name-link pp-score-win" : "pp-detail-name pp-right pp-name-link"
             }
           >
             {bName}
-          </span>
+          </Link>
         </div>
         <p className="pp-detail-meta">
           {dateStr}
