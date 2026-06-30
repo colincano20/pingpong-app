@@ -276,3 +276,13 @@ export async function deleteUpcomingMatch(id: string): Promise<void> {
   const { error } = await supabase.from("upcoming_matches").delete().eq("id", id);
   if (error) throw error;
 }
+
+export async function addPlayer(name: string): Promise<void> {
+  const { error } = await supabase.from("players").insert({ name });
+  if (error) throw error;
+}
+
+export async function renamePlayer(id: string, name: string): Promise<void> {
+  const { error } = await supabase.from("players").update({ name }).eq("id", id);
+  if (error) throw error;
+}

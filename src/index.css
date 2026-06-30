@@ -626,3 +626,49 @@ a.pp-match-card:active { transform: scale(0.99); }
 }
 .pp-table th:first-child { z-index: 2; }
 .pp-table td .pp-name-link { font-weight: 600; }
+
+/* Player management */
+.pp-inline-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 1rem;
+  background: var(--card);
+  color: var(--ink);
+}
+.pp-add-player { display: flex; gap: 0.5rem; align-items: center; padding: 0.75rem; }
+.pp-edit-btn {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.45rem;
+}
+.pp-edit-btn:hover { color: var(--green); }
+.pp-row-save {
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: var(--on-green);
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.pp-row-save:disabled { opacity: 0.6; cursor: default; }
+
+/* Play this on upcoming cards */
+.pp-up-actions { display: flex; align-items: center; gap: 0.8rem; }
+.pp-up-play {
+  background: var(--green);
+  color: var(--on-green);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+}

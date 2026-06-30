@@ -2,10 +2,11 @@
 // Record a completed match. Pick two players and which side A is on, enter the
 // games one at a time (to 11, win by 2), watch the live odds shift after each
 // game, then save. Saving runs the whole Elo update through data.recordMatch.
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { Player, GameScore } from "./data";
-import { recordMatch, matchupOdds } from "./data";
-import { gameProbFromElo, liveMatchProb } from "./engine";
+import { recordMatch, matchupOdds, deleteUpcomingMatch } from "./data";
+import { gameProbFromElo, liveMatchProb, toAmericanOdds, liveExpectedMargin } from "./engine";
 
 type Props = {
   players: Player[];
@@ -16,8 +17,12 @@ type SaveResult = Awaited<ReturnType<typeof recordMatch>>;
 const SIDES = ["Left", "Right"] as const;
 
 export default function LogMatch({ players, onSaved }: Props) {
-  const [aId, setAId] = useState("");
-  const [bId, setBId] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [aId, setAId] = useState(() => searchParams.get("a") ?? "");
+  const [bId, setBId] = useState(() => searchParams.get("b") ?? "");
+  const [upcomingId, setUpcomingId] = useState<string | null>(() =>
+    searchParams.get("upcoming"),
+  );
   const [aSide, setASide] = useState<(typeof SIDES)[number]>("Left");
   const [games, setGames] = useState<GameScore[]>([]);
   const [aPts, setAPts] = useState("");
@@ -26,6 +31,15 @@ export default function LogMatch({ players, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [result, setResult] = useState<SaveResult | null>(null);
+
+  // Clear the prefill params from the URL once read, so a refresh doesn't
+  // re-trigger the prefill or re-delete the upcoming match.
+  useEffect(() => {
+    if (searchParams.get("a") || searchParams.get("b") || searchParams.get("upcoming")) {
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const a = players.find((p) => p.id === aId);
   const b = players.find((p) => p.id === bId);
@@ -46,6 +60,17 @@ export default function LogMatch({ players, onSaved }: Props) {
   const gamesWonB = games.length - gamesWonA;
   const complete = gamesWonA === 3 || gamesWonB === 3;
   const liveProbA = liveMatchProb(gameProb, gamesWonA, gamesWonB);
+
+  // Once games are in, the odds go live off the current score. The live spread
+  // is the points already banked plus the expected margin of the games left.
+  const inMatch = games.length > 0;
+  const bankedMargin = games.reduce((acc, g) => acc + g.aPoints - g.bPoints, 0);
+  const liveRemaining = useMemo(
+    () =>
+      ready && inMatch ? liveExpectedMargin(a!.elo, b!.elo, gamesWonA, gamesWonB) : 0,
+    [ready, inMatch, a?.elo, b?.elo, gamesWonA, gamesWonB],
+  );
+  const liveSpreadLine = -Math.round((bankedMargin + liveRemaining) * 2) / 2;
 
   function addGame() {
     setInputError(null);
@@ -85,6 +110,14 @@ export default function LogMatch({ players, onSaved }: Props) {
       });
       setResult(r);
       onSaved();
+      if (upcomingId) {
+        try {
+          await deleteUpcomingMatch(upcomingId);
+        } catch {
+          // not fatal; the match is already recorded
+        }
+        setUpcomingId(null);
+      }
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -102,6 +135,7 @@ export default function LogMatch({ players, onSaved }: Props) {
     setInputError(null);
     setSaveError(null);
     setResult(null);
+    setUpcomingId(null);
   }
 
   // ---- Saved confirmation ----
@@ -192,21 +226,26 @@ export default function LogMatch({ players, onSaved }: Props) {
           <div className="pp-odds-line">
             <span>{a!.name}</span>
             <span className="pp-pct">
-              {games.length > 0 ? `${Math.round(liveProbA * 100)}%` : `${odds.aWinPct}%`}
+              {inMatch ? `${Math.round(liveProbA * 100)}%` : `${odds.aWinPct}%`}
             </span>
-            <span className="pp-ml">{fmtMoneyline(odds.aMoneyline)}</span>
+            <span className="pp-ml">
+              {inMatch ? fmtLiveMl(liveProbA) : fmtMoneyline(odds.aMoneyline)}
+            </span>
           </div>
           <div className="pp-odds-line">
             <span>{b!.name}</span>
             <span className="pp-pct">
-              {games.length > 0 ? `${Math.round((1 - liveProbA) * 100)}%` : `${odds.bWinPct}%`}
+              {inMatch ? `${Math.round((1 - liveProbA) * 100)}%` : `${odds.bWinPct}%`}
             </span>
-            <span className="pp-ml">{fmtMoneyline(odds.bMoneyline)}</span>
+            <span className="pp-ml">
+              {inMatch ? fmtLiveMl(1 - liveProbA) : fmtMoneyline(odds.bMoneyline)}
+            </span>
           </div>
           <p className="pp-spread">
-            Spread: {a!.name} {odds.aSpread > 0 ? "+" : ""}
-            {odds.aSpread}
-            {games.length > 0 && <span className="pp-live-tag"> · live</span>}
+            Spread: {a!.name}{" "}
+            {(inMatch ? liveSpreadLine : odds.aSpread) > 0 ? "+" : ""}
+            {inMatch ? liveSpreadLine : odds.aSpread}
+            {inMatch && <span className="pp-live-tag"> · live</span>}
           </p>
         </div>
       )}
@@ -283,6 +322,11 @@ export default function LogMatch({ players, onSaved }: Props) {
       )}
     </section>
   );
+}
+
+function fmtLiveMl(p: number): string {
+  if (p <= 0 || p >= 1) return "—";
+  return fmtMoneyline(toAmericanOdds(p));
 }
 
 function fmtMoneyline(ml: number): string {

@@ -219,3 +219,29 @@ function binom(n: number, k: number): number {
   }
   return result;
 }
+// Expected point margin (A minus B) over the games REMAINING in a match that
+// currently stands at winsA-winsB games won. For the live spread, add this to
+// the points already banked. Returns 0 once the match is decided.
+export function liveExpectedMargin(
+  eloA: number,
+  eloB: number,
+  winsA: number,
+  winsB: number,
+  iters = 10000,
+  rng: () => number = Math.random,
+): number {
+  if (winsA >= 3 || winsB >= 3) return 0;
+  const q = solvePointProb(matchWinProb(eloA, eloB));
+  let sum = 0;
+  for (let i = 0; i < iters; i++) {
+    let gamesA = winsA;
+    let gamesB = winsB;
+    while (gamesA < 3 && gamesB < 3) {
+      const g = simulateGame(q, rng);
+      sum += g.a - g.b;
+      if (g.a > g.b) gamesA++;
+      else gamesB++;
+    }
+  }
+  return sum / iters;
+}

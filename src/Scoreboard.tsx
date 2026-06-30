@@ -221,9 +221,17 @@ export default function Scoreboard({ players }: { players: Player[] }) {
                   Spread: {nameOf(u.playerA)} {u.odds.aSpread > 0 ? "+" : ""}
                   {u.odds.aSpread}
                 </span>
-                <button className="pp-up-remove" onClick={() => handleRemove(u.id)}>
-                  Remove
-                </button>
+                <span className="pp-up-actions">
+                  <Link
+                    className="pp-up-play"
+                    to={`/log?a=${u.playerA}&b=${u.playerB}&upcoming=${u.id}`}
+                  >
+                    Play
+                  </Link>
+                  <button className="pp-up-remove" onClick={() => handleRemove(u.id)}>
+                    Remove
+                  </button>
+                </span>
               </div>
             </div>
           ))}

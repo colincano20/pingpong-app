@@ -86,7 +86,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<Scoreboard players={players} />} />
-        <Route path="/standings" element={<Standings />} />
+        <Route path="/standings" element={<Standings onPlayersChanged={load} />} />
         <Route path="/log" element={<LogMatch players={players} onSaved={load} />} />
         <Route path="/odds" element={<Odds players={players} />} />
         <Route path="/stats" element={<Stats players={players} />} />
