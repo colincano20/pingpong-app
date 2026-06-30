@@ -249,3 +249,30 @@ export async function getMatchDetail(matchId: string): Promise<MatchDetailData> 
     })),
   };
 }
+
+export type UpcomingMatch = { id: string; playerA: string; playerB: string };
+
+export async function getUpcomingMatches(): Promise<UpcomingMatch[]> {
+  const { data, error } = await supabase
+    .from("upcoming_matches")
+    .select("id, player_a, player_b")
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    playerA: r.player_a as string,
+    playerB: r.player_b as string,
+  }));
+}
+
+export async function addUpcomingMatch(playerAId: string, playerBId: string): Promise<void> {
+  const { error } = await supabase
+    .from("upcoming_matches")
+    .insert({ player_a: playerAId, player_b: playerBId });
+  if (error) throw error;
+}
+
+export async function deleteUpcomingMatch(id: string): Promise<void> {
+  const { error } = await supabase.from("upcoming_matches").delete().eq("id", id);
+  if (error) throw error;
+}
