@@ -12,7 +12,7 @@ import {
 } from "./engine";
 
 export type GameScore = { aPoints: number; bPoints: number };
-export type Player = { id: string; name: string; elo: number };
+export type Player = { id: string; name: string; elo: number; userId: string | null };
 
 // ----------------------------------------------------------------------------
 // Pure helper (no database): work out the result of a match from its games.
@@ -44,10 +44,15 @@ export function computeOutcome(games: GameScore[]) {
 export async function getPlayers(): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
-    .select("id, name, elo")
+    .select("id, name, elo, user_id")
     .order("elo", { ascending: false });
   if (error) throw error;
-  return data as Player[];
+  return (data ?? []).map((r) => ({
+    id: r.id as string,
+    name: r.name as string,
+    elo: Number(r.elo),
+    userId: (r.user_id as string | null) ?? null,
+  }));
 }
 
 export type StandingsRow = {
@@ -279,6 +284,17 @@ export async function deleteUpcomingMatch(id: string): Promise<void> {
 
 export async function addPlayer(name: string): Promise<void> {
   const { error } = await supabase.from("players").insert({ name });
+  if (error) throw error;
+}
+
+export async function claimPlayer(playerId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+  const { error } = await supabase
+    .from("players")
+    .update({ user_id: user.id })
+    .eq("id", playerId)
+    .is("user_id", null); // only claim unclaimed profiles
   if (error) throw error;
 }
 

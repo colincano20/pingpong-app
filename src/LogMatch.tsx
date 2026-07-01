@@ -11,12 +11,13 @@ import { gameProbFromElo, liveMatchProb, toAmericanOdds, liveExpectedMargin } fr
 type Props = {
   players: Player[];
   onSaved: () => void;
+  userId: string | null;
 };
 
 type SaveResult = Awaited<ReturnType<typeof recordMatch>>;
 const SIDES = ["Left", "Right"] as const;
 
-export default function LogMatch({ players, onSaved }: Props) {
+export default function LogMatch({ players, onSaved, userId }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [aId, setAId] = useState(() => searchParams.get("a") ?? "");
   const [bId, setBId] = useState(() => searchParams.get("b") ?? "");
@@ -136,6 +137,19 @@ export default function LogMatch({ players, onSaved }: Props) {
     setSaveError(null);
     setResult(null);
     setUpcomingId(null);
+  }
+
+  // ---- Auth gate ----
+  if (!userId) {
+    return (
+      <section className="pp-card pp-form">
+        <p className="pp-auth-title">Sign in to log a match</p>
+        <p className="pp-muted">You need to be signed in to record results.</p>
+        <a className="pp-btn-primary" href="/login" style={{ textAlign: "center", textDecoration: "none" }}>
+          Sign in
+        </a>
+      </section>
+    );
   }
 
   // ---- Saved confirmation ----

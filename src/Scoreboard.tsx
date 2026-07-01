@@ -49,7 +49,7 @@ export default function Scoreboard({ players }: { players: Player[] }) {
     players.find((p) => p.id === id)?.name ?? "Unknown";
   const eloOf = (id: string) =>
     players.find((p) => p.id === id)?.elo ?? 1500;
-  const recent = [...matches].reverse();
+  const recent = [...matches].reverse().slice(0, 10);
 
   async function reloadUpcoming() {
     try {

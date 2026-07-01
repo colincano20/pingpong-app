@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Player, MatchRow, EloPoint } from "./data";
-import { getMatchHistory, getRatingHistory } from "./data";
+import { getMatchHistory, getRatingHistory, claimPlayer } from "./data";
 import { headToHead, playerRecord, streakFor } from "./statsmath";
 
 function EloChart({ history }: { history: EloPoint[] }) {
@@ -61,13 +61,23 @@ function shortDate(iso: string): string {
   });
 }
 
-export default function Profile({ players }: { players: Player[] }) {
+export default function Profile({
+  players,
+  userId,
+  onClaimed,
+}: {
+  players: Player[];
+  userId: string | null;
+  onClaimed?: () => void;
+}) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [ratingHistory, setRatingHistory] = useState<EloPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState(false);
+  const [claimError, setClaimError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -110,6 +120,24 @@ export default function Profile({ players }: { players: Player[] }) {
   const streakText = streak > 0 ? `W${streak}` : streak < 0 ? `L${-streak}` : "—";
   const streakClass =
     streak > 0 ? "pp-chip-val pp-up" : streak < 0 ? "pp-chip-val pp-down" : "pp-chip-val";
+
+  const alreadyClaimed = players.some((p) => p.userId === userId && p.id !== id);
+  const canClaim = userId && player && !player.userId && !alreadyClaimed;
+  const isOwn = userId && player?.userId === userId;
+
+  async function handleClaim() {
+    if (!id) return;
+    setClaiming(true);
+    setClaimError(null);
+    try {
+      await claimPlayer(id);
+      onClaimed?.();
+    } catch (e) {
+      setClaimError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setClaiming(false);
+    }
+  }
 
   let body;
   if (loading) {
@@ -155,6 +183,21 @@ export default function Profile({ players }: { players: Player[] }) {
             <div className="pp-chip-label">Streak</div>
           </div>
         </div>
+
+        {isOwn && <p className="pp-your-profile">✓ Your profile</p>}
+
+        {canClaim && (
+          <div className="pp-claim">
+            <button
+              className="pp-btn-primary"
+              onClick={handleClaim}
+              disabled={claiming}
+            >
+              {claiming ? "Claiming…" : "This is me — claim profile"}
+            </button>
+            {claimError && <p className="pp-inline-error">{claimError}</p>}
+          </div>
+        )}
 
         {h2h.length > 0 && (
           <>
