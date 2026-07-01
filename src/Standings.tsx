@@ -4,15 +4,18 @@
 // call back up to App so the new/renamed player shows everywhere immediately.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getStandings, addPlayer, renamePlayer, type StandingsRow } from "./data";
+import { getStandings, getMatchHistory, addPlayer, renamePlayer, type StandingsRow, type MatchRow } from "./data";
+import { recentForm } from "./statsmath";
 
 function PlayerRow({
   rank,
   row,
+  form,
   onSaved,
 }: {
   rank: number;
   row: StandingsRow;
+  form: boolean[];
   onSaved: () => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -66,6 +69,13 @@ function PlayerRow({
           {row.wins}-{row.losses}
           {pct !== null ? ` · ${pct}%` : ""}
         </span>
+        {form.length > 0 && (
+          <span className="pp-recent-form">
+            {form.map((won, i) => (
+              <span key={i} className={won ? "pp-form-dot pp-form-w" : "pp-form-dot pp-form-l"} />
+            ))}
+          </span>
+        )}
       </div>
       <button
         className="pp-edit-btn"
@@ -88,6 +98,7 @@ export default function Standings({
   onPlayersChanged: () => void;
 }) {
   const [rows, setRows] = useState<StandingsRow[]>([]);
+  const [matches, setMatches] = useState<MatchRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -97,7 +108,9 @@ export default function Standings({
 
   async function load() {
     try {
-      setRows(await getStandings());
+      const [s, m] = await Promise.all([getStandings(), getMatchHistory()]);
+      setRows(s);
+      setMatches(m);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -182,7 +195,7 @@ export default function Standings({
         <section className="pp-card">
           <ol className="pp-list">
             {rows.map((r, i) => (
-              <PlayerRow key={r.id} rank={i + 1} row={r} onSaved={handleRenamed} />
+              <PlayerRow key={r.id} rank={i + 1} row={r} form={recentForm(matches, r.id)} onSaved={handleRenamed} />
             ))}
           </ol>
         </section>

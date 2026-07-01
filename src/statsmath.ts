@@ -117,6 +117,14 @@ export function biggestBlowout(
     margin: Math.abs(best.aPointMargin),
   };
 }
+// Last N results for a player, oldest-first. true = win, false = loss.
+export function recentForm(matches: MatchRow[], playerId: string, n = 5): boolean[] {
+  return matches
+    .filter((m) => m.playerA === playerId || m.playerB === playerId)
+    .slice(-n)
+    .map((m) => m.winner === playerId);
+}
+
 export type PlayerRecord = { wins: number; losses: number; played: number };
 
 // A single player's overall win-loss record.

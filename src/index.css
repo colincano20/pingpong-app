@@ -492,6 +492,29 @@ a.pp-match-card:active { transform: scale(0.99); }
   margin-top: 0.2rem;
 }
 
+/* Recent form dots */
+.pp-recent-form { display: flex; gap: 3px; margin-top: 3px; }
+.pp-form-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.pp-form-w { background: var(--green); }
+.pp-form-l { background: var(--danger); }
+
+/* Elo rating chart */
+.pp-elo-chart-wrap { margin: 0.9rem 0 0.1rem; }
+.pp-elo-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+.pp-elo-chart-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.35rem;
+}
+.pp-elo-chart-meta .pp-muted { margin: 0; }
+
 /* Profile match log */
 .pp-log { display: flex; flex-direction: column; gap: 0.5rem; }
 .pp-log-row {

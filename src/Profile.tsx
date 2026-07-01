@@ -4,9 +4,55 @@
 // /player/:id by tapping a name anywhere it appears.
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import type { Player, MatchRow } from "./data";
-import { getMatchHistory } from "./data";
+import type { Player, MatchRow, EloPoint } from "./data";
+import { getMatchHistory, getRatingHistory } from "./data";
 import { headToHead, playerRecord, streakFor } from "./statsmath";
+
+function EloChart({ history }: { history: EloPoint[] }) {
+  if (history.length === 0) return null;
+  const W = 280;
+  const H = 72;
+  const PT = 10;
+  const PB = 6;
+  const values = [history[0].eloBefore, ...history.map((h) => h.eloAfter)];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 20;
+  const xOf = (i: number) =>
+    values.length === 1 ? W / 2 : (i / (values.length - 1)) * W;
+  const yOf = (v: number) => PT + ((max - v) / range) * (H - PT - PB);
+  const pts = values.map((v, i) => `${xOf(i)},${yOf(v)}`).join(" ");
+  const area = `0,${H} ${pts} ${W},${H}`;
+  const delta = Math.round(values[values.length - 1] - values[0]);
+  return (
+    <div className="pp-elo-chart-wrap">
+      <svg viewBox={`0 0 ${W} ${H}`} className="pp-elo-chart">
+        <defs>
+          <linearGradient id="elo-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--green)" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="var(--green)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={area} fill="url(#elo-fill)" />
+        <polyline
+          points={pts}
+          fill="none"
+          stroke="var(--green)"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="pp-elo-chart-meta">
+        <span className="pp-muted">Started {Math.round(values[0])}</span>
+        <span className={delta >= 0 ? "pp-up" : "pp-down"}>
+          {delta >= 0 ? "+" : ""}
+          {delta} all time
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function shortDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -19,19 +65,22 @@ export default function Profile({ players }: { players: Player[] }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [matches, setMatches] = useState<MatchRow[]>([]);
+  const [ratingHistory, setRatingHistory] = useState<EloPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
     setLoading(true);
-    getMatchHistory()
-      .then((m) => {
+    Promise.all([getMatchHistory(), getRatingHistory(id)])
+      .then(([m, rh]) => {
         setMatches(m);
+        setRatingHistory(rh);
         setError(null);
       })
       .catch((e) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [id]);
 
   const player = players.find((p) => p.id === id);
   const nameOf = (pid: string) =>
@@ -87,6 +136,8 @@ export default function Profile({ players }: { players: Player[] }) {
       <>
         <h2 className="pp-profile-name">{player.name}</h2>
         <p className="pp-profile-elo">{Math.round(player.elo)} Elo</p>
+
+        <EloChart history={ratingHistory} />
 
         <div className="pp-chips">
           <div className="pp-chip">

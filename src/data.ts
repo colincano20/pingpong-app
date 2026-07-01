@@ -286,3 +286,30 @@ export async function renamePlayer(id: string, name: string): Promise<void> {
   const { error } = await supabase.from("players").update({ name }).eq("id", id);
   if (error) throw error;
 }
+
+export type EloPoint = { eloBefore: number; eloAfter: number; playedAt: string };
+
+export async function getRatingHistory(playerId: string): Promise<EloPoint[]> {
+  const { data, error } = await supabase
+    .from("rating_history")
+    .select("elo_before, elo_after, matches(played_at)")
+    .eq("player_id", playerId);
+  if (error) throw error;
+  const rows = (data ?? []) as unknown as Array<{
+    elo_before: number;
+    elo_after: number;
+    matches: { played_at: string } | null;
+  }>;
+  return rows
+    .filter((r) => r.matches !== null)
+    .sort(
+      (a, b) =>
+        new Date(a.matches!.played_at).getTime() -
+        new Date(b.matches!.played_at).getTime(),
+    )
+    .map((r) => ({
+      eloBefore: Number(r.elo_before),
+      eloAfter: Number(r.elo_after),
+      playedAt: r.matches!.played_at,
+    }));
+}
