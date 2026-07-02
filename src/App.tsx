@@ -80,7 +80,12 @@ export default function App() {
         </div>
         <div className="pp-header-right">
           {session ? (
-            <button className="pp-auth-out" onClick={signOut}>Sign out</button>
+            <div className="pp-auth-signed-in">
+              <NavLink className="pp-auth-account" to="/login">
+                {session.user.email?.split("@")[0]}
+              </NavLink>
+              <button className="pp-auth-out" onClick={signOut}>Sign out</button>
+            </div>
           ) : (
             <NavLink className="pp-auth-in" to="/login">Sign in</NavLink>
           )}

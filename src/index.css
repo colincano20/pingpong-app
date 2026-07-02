@@ -504,6 +504,18 @@ a.pp-match-card:active { transform: scale(0.99); }
   border-radius: 8px;
   white-space: nowrap;
 }
+.pp-auth-signed-in { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+.pp-auth-account {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: none;
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pp-auth-account:hover { text-decoration: underline; }
 .pp-auth-out {
   font-size: 0.8rem;
   font-weight: 600;
@@ -517,6 +529,9 @@ a.pp-match-card:active { transform: scale(0.99); }
 }
 .pp-auth-out:hover { color: var(--danger); border-color: var(--danger); }
 .pp-auth-title { font-size: 1.2rem; font-weight: 700; margin: 0; }
+.pp-auth-subtitle { font-size: 0.95rem; font-weight: 700; margin: 0; }
+.pp-auth-divider { height: 1px; background: var(--line); margin: 0.25rem 0; }
+.pp-auth-success { color: var(--green); font-weight: 600; font-size: 0.95rem; margin: 0; }
 .pp-your-profile {
   font-size: 0.82rem;
   font-weight: 600;
