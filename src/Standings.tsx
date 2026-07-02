@@ -4,18 +4,22 @@
 // call back up to App so the new/renamed player shows everywhere immediately.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getStandings, getMatchHistory, addPlayer, renamePlayer, type StandingsRow, type MatchRow } from "./data";
+import { getStandings, getMatchHistory, addPlayer, renamePlayer, type StandingsRow, type MatchRow, type Player } from "./data";
 import { recentForm } from "./statsmath";
 
 function PlayerRow({
   rank,
   row,
   form,
+  avatar,
+  canEdit,
   onSaved,
 }: {
   rank: number;
   row: StandingsRow;
   form: boolean[];
+  avatar: string;
+  canEdit: boolean;
   onSaved: () => void;
 }) {
   const [editing, setEditing] = useState(false);
@@ -61,6 +65,7 @@ function PlayerRow({
   return (
     <li className="pp-row">
       <span className="pp-rank">{rank}</span>
+      <span className="pp-avatar-sm">{avatar}</span>
       <div className="pp-name-block">
         <Link className="pp-name pp-name-link" to={`/player/${row.id}`}>
           {row.name}
@@ -77,16 +82,18 @@ function PlayerRow({
           </span>
         )}
       </div>
-      <button
-        className="pp-edit-btn"
-        onClick={() => {
-          setName(row.name);
-          setEditing(true);
-        }}
-        aria-label={`Rename ${row.name}`}
-      >
-        ✎
-      </button>
+      {canEdit && (
+        <button
+          className="pp-edit-btn"
+          onClick={() => {
+            setName(row.name);
+            setEditing(true);
+          }}
+          aria-label={`Rename ${row.name}`}
+        >
+          ✎
+        </button>
+      )}
       <span className="pp-elo">{Math.round(row.elo)}</span>
     </li>
   );
@@ -94,8 +101,12 @@ function PlayerRow({
 
 export default function Standings({
   onPlayersChanged,
+  userId,
+  players,
 }: {
   onPlayersChanged: () => void;
+  userId: string | null;
+  players: Player[];
 }) {
   const [rows, setRows] = useState<StandingsRow[]>([]);
   const [matches, setMatches] = useState<MatchRow[]>([]);
@@ -195,7 +206,15 @@ export default function Standings({
         <section className="pp-card">
           <ol className="pp-list">
             {rows.map((r, i) => (
-              <PlayerRow key={r.id} rank={i + 1} row={r} form={recentForm(matches, r.id)} onSaved={handleRenamed} />
+              <PlayerRow
+                key={r.id}
+                rank={i + 1}
+                row={r}
+                form={recentForm(matches, r.id)}
+                avatar={players.find((p) => p.id === r.id)?.avatar ?? '🎱'}
+                canEdit={!!userId && players.find((p) => p.id === r.id)?.userId === userId}
+                onSaved={handleRenamed}
+              />
             ))}
           </ol>
         </section>

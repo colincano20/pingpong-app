@@ -12,7 +12,9 @@ import {
 } from "./engine";
 
 export type GameScore = { aPoints: number; bPoints: number };
-export type Player = { id: string; name: string; elo: number; userId: string | null };
+export const AVATARS = ['🦊','🐯','🦁','🐸','🦋','🐙','🦄','🐲','🦅','🐺','🦈','🐼','🦝','🐧','🦩','🎱'] as const;
+
+export type Player = { id: string; name: string; elo: number; userId: string | null; avatar: string };
 
 // ----------------------------------------------------------------------------
 // Pure helper (no database): work out the result of a match from its games.
@@ -44,7 +46,7 @@ export function computeOutcome(games: GameScore[]) {
 export async function getPlayers(): Promise<Player[]> {
   const { data, error } = await supabase
     .from("players")
-    .select("id, name, elo, user_id")
+    .select("id, name, elo, user_id, avatar")
     .order("elo", { ascending: false });
   if (error) throw error;
   return (data ?? []).map((r) => ({
@@ -52,6 +54,7 @@ export async function getPlayers(): Promise<Player[]> {
     name: r.name as string,
     elo: Number(r.elo),
     userId: (r.user_id as string | null) ?? null,
+    avatar: (r.avatar as string) || '🎱',
   }));
 }
 
@@ -284,6 +287,11 @@ export async function deleteUpcomingMatch(id: string): Promise<void> {
 
 export async function addPlayer(name: string): Promise<void> {
   const { error } = await supabase.from("players").insert({ name });
+  if (error) throw error;
+}
+
+export async function updateAvatar(playerId: string, avatar: string): Promise<void> {
+  const { error } = await supabase.from("players").update({ avatar }).eq("id", playerId);
   if (error) throw error;
 }
 

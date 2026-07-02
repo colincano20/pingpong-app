@@ -113,13 +113,13 @@ export default function App() {
       </nav>
 
       <Routes>
-        <Route path="/" element={<Scoreboard players={players} />} />
-        <Route path="/standings" element={<Standings onPlayersChanged={load} />} />
+        <Route path="/" element={<Scoreboard players={players} userId={userId} />} />
+        <Route path="/standings" element={<Standings onPlayersChanged={load} userId={userId} players={players} />} />
         <Route path="/log" element={<LogMatch players={players} onSaved={load} userId={userId} />} />
         <Route path="/odds" element={<Odds players={players} />} />
         <Route path="/stats" element={<Stats players={players} />} />
         <Route path="/match/:id" element={<MatchDetail players={players} />} />
-        <Route path="/player/:id" element={<Profile players={players} userId={userId} onClaimed={load} />} />
+        <Route path="/player/:id" element={<Profile players={players} userId={userId} onClaimed={load} onAvatarChanged={load} />} />
         <Route path="/login" element={<Auth session={session} />} />
       </Routes>
 

@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import type { Player, MatchRow, EloPoint } from "./data";
-import { getMatchHistory, getRatingHistory, claimPlayer } from "./data";
+import { getMatchHistory, getRatingHistory, claimPlayer, updateAvatar, AVATARS } from "./data";
 import { headToHead, playerRecord, streakFor } from "./statsmath";
 
 function EloChart({ history }: { history: EloPoint[] }) {
@@ -65,10 +65,12 @@ export default function Profile({
   players,
   userId,
   onClaimed,
+  onAvatarChanged,
 }: {
   players: Player[];
   userId: string | null;
   onClaimed?: () => void;
+  onAvatarChanged?: () => void;
 }) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -78,6 +80,8 @@ export default function Profile({
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
+  const [showAllMatches, setShowAllMatches] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -139,6 +143,17 @@ export default function Profile({
     }
   }
 
+  async function handleAvatarChange(avatar: string) {
+    if (!id) return;
+    setShowAvatarPicker(false);
+    try {
+      await updateAvatar(id, avatar);
+      onAvatarChanged?.();
+    } catch (e) {
+      console.error("Avatar update failed:", e);
+    }
+  }
+
   let body;
   if (loading) {
     body = (
@@ -162,6 +177,34 @@ export default function Profile({
   } else {
     body = (
       <>
+        <div
+          className={`pp-profile-avatar${isOwn ? " pp-profile-avatar-tap" : ""}`}
+          onClick={() => isOwn && setShowAvatarPicker(true)}
+          title={isOwn ? "Change avatar" : undefined}
+        >
+          {player.avatar}
+          {isOwn && <span className="pp-avatar-edit-hint">✎</span>}
+        </div>
+
+        {showAvatarPicker && (
+          <div className="pp-avatar-modal-backdrop" onClick={() => setShowAvatarPicker(false)}>
+            <div className="pp-avatar-modal" onClick={(e) => e.stopPropagation()}>
+              <p className="pp-avatar-modal-title">Choose your avatar</p>
+              <div className="pp-avatar-picker">
+                {AVATARS.map((a) => (
+                  <button
+                    key={a}
+                    className={`pp-avatar-btn${player.avatar === a ? " pp-avatar-btn-on" : ""}`}
+                    onClick={() => handleAvatarChange(a)}
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+              <button className="pp-link" onClick={() => setShowAvatarPicker(false)}>Cancel</button>
+            </div>
+          </div>
+        )}
         <h2 className="pp-profile-name">{player.name}</h2>
         <p className="pp-profile-elo">{Math.round(player.elo)} Elo</p>
 
@@ -226,7 +269,7 @@ export default function Profile({
           </section>
         ) : (
           <div className="pp-log">
-            {myMatches.map((m) => {
+            {(showAllMatches ? myMatches : myMatches.slice(0, 5)).map((m) => {
               const won = m.winner === id;
               const oppId = m.playerA === id ? m.playerB : m.playerA;
               const myGames = m.playerA === id ? m.aGames : m.bGames;
@@ -248,6 +291,11 @@ export default function Profile({
               );
             })}
           </div>
+        )}
+        {myMatches.length > 5 && (
+          <button className="pp-link pp-show-more" onClick={() => setShowAllMatches((v) => !v)}>
+            {showAllMatches ? "Show less" : `See all ${myMatches.length} matches`}
+          </button>
         )}
       </>
     );

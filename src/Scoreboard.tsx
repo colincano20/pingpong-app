@@ -23,7 +23,7 @@ function fmtMl(ml: number): string {
   return ml > 0 ? `+${ml}` : `${ml}`;
 }
 
-export default function Scoreboard({ players }: { players: Player[] }) {
+export default function Scoreboard({ players, userId }: { players: Player[]; userId: string | null }) {
   const [matches, setMatches] = useState<MatchRow[]>([]);
   const [upcoming, setUpcoming] = useState<UpcomingMatch[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -121,9 +121,11 @@ export default function Scoreboard({ players }: { players: Player[] }) {
     <div>
       <div className="pp-section-row">
         <p className="pp-section-label">Upcoming</p>
-        <button className="pp-add-btn" onClick={() => setShowAdd((v) => !v)}>
-          {showAdd ? "Close" : "+ Add"}
-        </button>
+        {userId && (
+          <button className="pp-add-btn" onClick={() => setShowAdd((v) => !v)}>
+            {showAdd ? "Close" : "+ Add"}
+          </button>
+        )}
       </div>
 
       {showAdd && (

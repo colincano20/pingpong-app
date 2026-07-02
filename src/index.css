@@ -276,6 +276,7 @@ body {
 }
 .pp-btn-primary { background: var(--green); color: var(--on-green); width: 100%; padding: 0.85rem; border-color: var(--green); }
 .pp-btn-primary:disabled { opacity: 0.6; cursor: default; }
+.pp-show-more { display: block; width: 100%; margin-top: 0.4rem; }
 .pp-link {
   border: none;
   background: none;
@@ -539,6 +540,72 @@ a.pp-match-card:active { transform: scale(0.99); }
   margin: 0 0 0.5rem;
 }
 .pp-claim { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+/* Avatars */
+.pp-profile-avatar {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin: 0.2rem 0 0.1rem;
+  position: relative;
+  display: inline-block;
+}
+.pp-profile-avatar-tap { cursor: pointer; }
+.pp-avatar-edit-hint {
+  position: absolute;
+  bottom: -2px;
+  right: -6px;
+  font-size: 0.85rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.pp-avatar-sm { font-size: 1.3rem; line-height: 1; flex-shrink: 0; }
+.pp-avatar-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1.25rem;
+}
+.pp-avatar-modal {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.pp-avatar-modal-title { font-size: 1rem; font-weight: 700; margin: 0; }
+.pp-avatar-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+.pp-avatar-btn {
+  font-size: 1.4rem;
+  background: var(--inset);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 0.25rem;
+  cursor: pointer;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.1s;
+}
+.pp-avatar-btn:hover { border-color: var(--green); }
+.pp-avatar-btn-on { border-color: var(--green); background: var(--green-soft); }
 
 /* Recent form dots */
 .pp-recent-form { display: flex; gap: 3px; margin-top: 3px; }
